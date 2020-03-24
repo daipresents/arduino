@@ -11,7 +11,9 @@
 #include <LiquidCrystal.h>
 
 SoftwareSerial serial(6, 7); //RX, TX
-LiquidCrystal lcd( 2, 4, 10, 11, 12, 13 );
+//LiquidCrystal lcd( 2, 4, 10, 11, 12, 13 );
+LiquidCrystal lcd( 13, 12, 11, 10, 9, 8);
+
 
 String LINE1 = "konnitiwa watashiwa/fujihara/dai/desu.";
 String LINE2 = "kyouwa yorosiku/onegai/simasu\r";
