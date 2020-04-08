@@ -1,5 +1,3 @@
-#include <SevSeg.h>
-
 int pinA = 2;
 int pinB = 3;
 int pinC = 4;
