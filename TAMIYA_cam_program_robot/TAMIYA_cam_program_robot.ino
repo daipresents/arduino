@@ -1,137 +1,235 @@
 /**
- * タミヤ カムプログラムロボット用スケッチ
- */
+   タミヤ カムプログラムロボット用スケッチ
+*/
+
+const boolean DEBUG = true;
+const int COMMON_DELAY = 300;
 
 // 目となるLEDふたつ
 const int LED_EYE_RIGHT = 11;
 const int LED_EYE_LEFT = 12;
 
-// L293D
-// モータA
-const int ENABLE_A = 4;
-const int CH1 = 5;
-const int CH2 = 3;
+// モーターはPWM対応ピンに接続して速度調整できるようにもできるが
+// ジョイスティックの反応が悪いので断念
 
-// モータB
-const int ENABLE_B = 8;
-const int CH3 = 9;
-const int CH4 = 10;
+// モーターA
+const int A_1A = 5;
+const int A_1B = 3;
+// モーターB 
+const int B_1A = 6;
+const int B_1B = 9;
 
-void setup() {  
+// ジョイスティック
+const int VRX = 1;
+const int VRY = 2;
+
+// スピードをLOW、HIGHに分ける
+// 上下の動きの閾値。コントローラーに合わせてこの値を調整する
+const int VRX_UP_MIN = 0;
+const int VRX_UP_MAX = 170;
+const int VRX_NEUTRAL_MIN = 171;
+const int VRX_NEUTRAL_MAX = 1019;
+const int VRX_DOWN_MIN = 1020;
+const int VRX_DOWN_MAX = 1023;
+
+// 左右の動き
+const int VRY_RIGHT_HIGH_MIN = 0;
+const int VRY_RIGHT_HIGH_MAX = 169;
+const int VRY_NEUTRAL_MIN = 170;
+const int VRY_NEUTRAL_MAX = 999;
+const int VRY_LEFT_HIGH_MIN = 1000;
+const int VRY_LEFT_HIGH_MAX = 1023;
+
+void setup() {
   pinMode(LED_EYE_RIGHT, OUTPUT);
   pinMode(LED_EYE_LEFT, OUTPUT);
-  pinMode(ENABLE_A,OUTPUT);
-  pinMode(CH1,OUTPUT);
-  pinMode(CH2,OUTPUT);
+  pinMode(A_1A, OUTPUT);
+  pinMode(A_1B, OUTPUT);
+  pinMode(B_1A, OUTPUT);
+  pinMode(B_1B, OUTPUT);
+  pinMode(VRX, INPUT);
+  pinMode(VRY, INPUT);
   
   Serial.begin(9600);
 
   Serial.println("Initialization. Stop all motor");
-  digitalWrite(ENABLE_A, LOW);
-  digitalWrite(ENABLE_B, LOW);
+  stop();
 }
 
 void loop() {
-  //blink(HIGH);
-      
-  goAdvance();
-  //goReverse();
-  //goLowSpeed();
-  //goMiddleSpeed();
-  //goHighSpeed();
+  blink(HIGH);
 
-  //stop();
-
-  //blink(LOW);
+  control();
+  
+  blink(LOW);
 }
 
 /**
- * LEDのオン・オフ操作
- */
+   LEDのオン・オフ操作
+*/
 void blink(int onOff) {
-  //Serial.println("LED on/off");
+  String message = "LED: ";
+  log(message.concat(String(onOff)));
+  
   digitalWrite(LED_EYE_RIGHT, onOff);
   digitalWrite(LED_EYE_LEFT, onOff);
-  delay(500);  
+  
+  delay(300);
 }
 
 /**
- * 正回転
- */
-void goAdvance() {
-  Serial.println("Go advance");
-  digitalWriteForMotor(HIGH, LOW);
+   正回転
+*/
+void goUp() {
+  log("Go up");
+  analogWriteForMotor(HIGH, LOW, HIGH, LOW);
 }
 
 /**
- * 逆回転
- */
-void goReverse() {
-  Serial.println("Go reverse");
-  digitalWriteForMotor(LOW, HIGH);
+   逆回転
+*/
+void goDown() {
+  log("Go down");
+  analogWriteForMotor(LOW, HIGH, LOW, HIGH);
 }
 
 /**
- * 低速回転
- */
-void goLowSpeed() {
-  Serial.println("Go low speed");
-  analogWriteForMotor(127);
+   右回転
+*/
+void goRight() {
+  log("Go right");
+  analogWriteForMotor(HIGH, LOW, LOW, HIGH);
 }
 
 /**
- * 中速回転
- */
-void goMiddleSpeed() {  
-  Serial.println("Go middle speed");
-  analogWriteForMotor(181);
-}
-
-
-/**
- * 高速回転
- */
-void goHighSpeed() {
-  Serial.println("Go high speed");
-  analogWriteForMotor(255);
+   左回転
+*/
+void goLeft() {
+  log("Go left");
+  analogWriteForMotor(LOW, HIGH, HIGH, LOW);
 }
 
 /**
- * 停止
- */
+   停止
+*/
 void stop() {
-  Serial.println("Stop");
-  digitalWrite(ENABLE_A, LOW);
-  digitalWrite(ENABLE_B, LOW);
+  Serial.println("Stopping");
+  analogWriteForMotor(LOW, LOW, LOW, LOW);
+  delay(COMMON_DELAY);
 }
 
-void digitalWriteForMotor(int channelA, int channelB) {
-  digitalWrite(ENABLE_A, HIGH);
-  digitalWrite(CH1, channelA);    
-  digitalWrite(CH2, channelB);
-
-  digitalWrite(ENABLE_B, HIGH);
-  digitalWrite(CH3, channelA);    
-  digitalWrite(CH4, channelB);
-
-  // 1秒モーターを動かす
-  delay(1000);
+void analogWriteForMotor(int inputA, int inputB, int inputC, int inputD) {
+  digitalWrite(A_1A, inputA);
+  digitalWrite(A_1B, inputB);
+  digitalWrite(B_1A, inputC);
+  digitalWrite(B_1B, inputD);
+  delay(COMMON_DELAY);
 }
 
-void analogWriteForMotor(int speed) {
-  digitalWrite(ENABLE_A, HIGH);
-  analogWrite(CH1, 255);    
-
-  digitalWrite(ENABLE_B, HIGH);
-  analogWrite(CH3, 255);    
+boolean isNeutral() {
+  int x = analogRead(VRX);
+  int y = analogRead(VRY);
   
-  delay(100);
+  if (VRX_NEUTRAL_MIN <= x && x <= VRX_NEUTRAL_MAX) {
+    if (VRY_NEUTRAL_MIN <= y && y <= VRY_NEUTRAL_MAX) {
+      return true;
+    }
+  }
   
-  analogWrite(CH1, speed);
-  digitalWrite(CH2, LOW);
-  analogWrite(CH3, speed);
-  digitalWrite(CH4, LOW);
+  return false;
+}
 
-  // 1秒モーターを動かす
-  delay(1000);
+boolean isXHigh() {
+  // XかYどちらを優先するか判断
+  int x = analogRead(VRX);
+
+  if (VRX_UP_MIN <= x && x <= VRX_UP_MAX) {
+    return true;
+  }
+
+  if (VRX_DOWN_MIN <= x && x <= VRX_DOWN_MAX) {
+    return true;
+  }
+
+  return false;
+}
+
+boolean isYHigh() {
+  // XかYどちらを優先するか判断
+  int y = analogRead(VRY);
+
+  if (VRY_RIGHT_HIGH_MIN <= y && y <= VRY_RIGHT_HIGH_MAX) {
+    return true;
+  }
+
+  if (VRY_LEFT_HIGH_MIN <= y && y <= VRY_LEFT_HIGH_MAX) {
+    return true;
+  }
+
+  return false;
+}
+
+boolean isUp() {
+  int value = analogRead(VRX);
+  if (value < VRX_NEUTRAL_MIN) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+boolean isRight() {
+  int value = analogRead(VRY);
+  if (value < VRY_NEUTRAL_MIN) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void goX() {
+  if (isUp()) {
+    goUp();
+  } else {
+    goDown();
+  }
+}
+
+void goY() {
+  if (isRight()) {
+    goRight();
+  } else {
+    goLeft();
+  }
+}
+
+void control() {
+  logXY();
+
+  // Neutralかの確認をまずやる
+  if (isNeutral()) {
+    stop();
+    return;
+  }
+
+  if (isXHigh()) {
+    // XかYどちらを優先するか判断
+    goX();
+  } else {
+    goY();
+  }
+}
+
+void logXY() {
+  String message = "x:";
+  message.concat(analogRead(VRX));
+  message.concat(" y:");
+  message.concat(analogRead(VRY));
+  log(message);
+}
+
+void log(String message) {
+  if (DEBUG) {
+    Serial.println(message);
+  }
 }
