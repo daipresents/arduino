@@ -1,51 +1,47 @@
-const int RED = 9;
-const int GREEN = 10;
-const int BLUE = 11;
+const int RED_PIN = 9;
+const int GREEN_PIN = 10;
+const int BLUE_PIN = 11;
+
+const int RED_SW = 2;
+const int GREEN_SW = 3;
+const int BLUE_SW = 4;
 
 void setup() {
-  pinMode(RED, OUTPUT);
-  pinMode(BLUE, OUTPUT);
-  pinMode(GREEN, OUTPUT);
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+
+  pinMode(RED_SW, INPUT_PULLUP);
+  pinMode(GREEN_SW, INPUT_PULLUP);
+  pinMode(BLUE_SW, INPUT_PULLUP);
+  
+  Serial.begin(9600);
 }
 
 void loop() {
-  int color[] = {RED, BLUE, GREEN}; 
+  int rValue = digitalRead(RED_SW);
+  int gValue = digitalRead(GREEN_SW);
+  int bValue = digitalRead(BLUE_SW);
 
-  // 赤（Red) => 青（Blue) => 緑（Green)
-  for(int i = 0; i < sizeof(color); i++) {
-    digitalWrite(color[i], HIGH);
-    delay(500);
-    digitalWrite(color[i], LOW);
-    delay(500); 
+  Serial.println("r: " + String(rValue) + ", g: " + String(gValue) + ", b: " + String(bValue));
+  
+  if(digitalRead(RED_SW)) {
+    digitalWrite(RED_PIN, HIGH);
+  } else {
+    digitalWrite(RED_PIN, LOW);
   }
 
-  // Red + Blue
-  digitalWrite(RED, HIGH);
-  digitalWrite(BLUE, HIGH);
-  digitalWrite(GREEN, LOW);
-  delay(3000);
+  if(digitalRead(GREEN_SW)) {
+    digitalWrite(GREEN_PIN, HIGH);
+  } else {
+    digitalWrite(GREEN_PIN, LOW);
+  }
+
+  if(digitalRead(BLUE_SW)) {
+    digitalWrite(BLUE_PIN, HIGH);
+  } else {
+    digitalWrite(BLUE_PIN, LOW);
+  }
   
-  // Red + Green
-  digitalWrite(RED, HIGH);
-  digitalWrite(BLUE, LOW);
-  digitalWrite(GREEN, HIGH);
-  delay(3000);
-
-  // Blue + Green
-  digitalWrite(RED, LOW);
-  digitalWrite(BLUE, HIGH);
-  digitalWrite(GREEN, HIGH);
-  delay(3000);
-
-  // Red + Blue + Green
-  digitalWrite(RED, HIGH);
-  digitalWrite(BLUE, HIGH);
-  digitalWrite(GREEN, HIGH);
-  delay(3000);
-
-  // All off
-  digitalWrite(RED, LOW);
-  digitalWrite(BLUE, LOW);
-  digitalWrite(GREEN, LOW);
-  delay(3000);
+  delay(1000);
 }
