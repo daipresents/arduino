@@ -3,7 +3,6 @@
 const int SERVO_PIN = 9;
 const int TRIG_PIN = 2;
 const int ECHO_PIN = 3;
-const boolean DEBUG = false;
 
 Servo servo;
  
@@ -17,17 +16,17 @@ void setup() {
 }
 
 void loop() {
-
-  if(Serial.available() > 0) {
-    moveServo(Serial.read());
+  for(int angle = 0; angle <= 120; angle++) {
+    moveServo(angle);
     delay(100);
-    Serial.write(getDistance());
+    getDistance();
   }
   
 }
 
 int moveServo(int angle){
-  log("angle: ", angle);
+  Serial.print("angle: ");
+  Serial.println(angle);
   servo.write(angle);
 }
 
@@ -45,22 +44,18 @@ int getDistance() {
   
   // 距離データが取得できたら距離をcmで計算する
   if (duration > 0) {
-    log("duration: ", duration);
+    Serial.print("duration: ");
+    Serial.println(duration);
     
     // 往復距離なのでまず半分にする
     //duration = duration / 2;
 
     // 音速を340m/sに設定
     distance = duration * 0.017;
-    log("distance: ", distance);
+    Serial.print("distance: ");
+    Serial.print(distance);
+    Serial.println("cm");
   }
 
   return distance;
-}
-
-void log(String message1, int message2){
-  if(DEBUG){
-    Serial.print(message1);
-    Serial.println(message2);
-  }
 }
