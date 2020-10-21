@@ -2,16 +2,17 @@ import processing.serial.*;
 
 Serial port;
 float line_max_size = 10000.0;
-int half_size = 500;
+int half_size = 750;
 int angle = 0;
   
 void setup() {
   //printArray(Serial.list());
 
-  size(1000, 1000);
+  size(1500, 1000);
+  
   background(255);
   
-  port = new Serial(this, "/dev/cu.usbserial-1420", 9600);
+  port = new Serial(this, "/dev/cu.usbserial-1430", 9600);
   port.write(angle);
 }
 
